@@ -1,7 +1,7 @@
-=== MTSUAV Duplicate Content ===
+=== One-Click Duplicate ===
 Contributors: mobiletechspecialists
 Donate link: https://mtsuav.com/shop/
-Tags: duplicate, clone, copy post, duplicate page
+Tags: duplicate post, duplicate page, duplicate product, clone, woocommerce
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 8.0
@@ -13,7 +13,7 @@ Duplicate posts, pages, products, and custom post types in one click, with full 
 
 == Description ==
 
-MTSUAV Duplicate Content adds one-click duplication for posts, pages, WooCommerce products, and any custom post type. Clone an item as a draft to safely rework it, or duplicate straight to published.
+One-Click Duplicate adds one-click duplication for posts, pages, WooCommerce products, and any custom post type. Clone an item as a draft to safely rework it, or duplicate straight to published.
 
 Three ways to duplicate:
 
@@ -37,7 +37,7 @@ Works with hierarchical post types. Menu order, parent, and page template are pr
 
 == Installation ==
 
-1. Upload the `mtsuav-duplicate-content` folder to your `/wp-content/plugins/` directory.
+1. Upload the `one-click-duplicate` folder to your `/wp-content/plugins/` directory.
 2. Activate the plugin through the 'Plugins' screen in WordPress.
 3. Go to Settings > Duplicate Content to choose which content types can be duplicated and what gets copied.
 4. Use the "Duplicate" row action, the "Duplicate" bulk action, or the admin bar item to clone content.
@@ -88,4 +88,4 @@ The plugin checks the public GitHub releases page for this project about twice a
 
 This plugin does not collect, store, or transmit any personal data.
 
-The automatic updater polls the public GitHub API (`https://api.github.com/repos/opsecfreak/mtsuav-duplicate-content/releases/latest`) about twice a day to check for new releases. The request carries a generic updater user-agent (MTSUAV-Updater plus your WordPress version); no site URL, license keys, emails, or other personal data are sent. No other outbound requests are made.
+The automatic updater polls the public GitHub API (`https://api.github.com/repos/opsecfreak/one-click-duplicate/releases/latest`) about twice a day to check for new releases. The request carries a generic updater user-agent (MTSUAV-Updater plus your WordPress version); no site URL, license keys, emails, or other personal data are sent. No other outbound requests are made.

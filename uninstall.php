@@ -1,19 +1,19 @@
 <?php
 /**
- * Uninstall handler for MTSUAV Duplicate Content.
+ * Uninstall handler for One-Click Duplicate.
  *
  * Removes the plugin option, per-user tip-box dismissal flags, and any
  * cached updater data.
  *
- * @package MTSUAV_Duplicate_Content
+ * @package OCD
  */
 
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
-delete_option( 'mtsuav_dc_options' );
+delete_option( 'ocd_options' );
 
 // Per-user tip-box dismissal flags set by the shared tip box drop-in.
-delete_metadata( 'user', 0, 'mtsuav_tip_dismissed_mtsuav-duplicate-content', '', true );
+delete_metadata( 'user', 0, 'mtsuav_tip_dismissed_one-click-duplicate', '', true );
 
 // Cached GitHub release data from the shared updater drop-in.
-delete_site_transient( 'mtsuav_upd_mtsuav-duplicate-content' );
+delete_site_transient( 'mtsuav_upd_one-click-duplicate' );

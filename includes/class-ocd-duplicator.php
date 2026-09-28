@@ -1,6 +1,6 @@
 <?php
 /**
- * Duplication engine for MTSUAV Duplicate Content.
+ * Duplication engine for One-Click Duplicate.
  *
  * Triggers:
  * - "Duplicate" row action on post list tables.
@@ -9,16 +9,16 @@
  *
  * Every trigger enforces the configured minimum capability and uses nonces.
  *
- * @package MTSUAV_Duplicate_Content
+ * @package OCD
  */
 
 defined( 'ABSPATH' ) || exit;
 
-class MTSUAV_DC_Duplicator {
+class OCD_Duplicator {
 
-	const ROW_ACTION   = 'mtsuav_dc_duplicate';
-	const BULK_ACTION  = 'mtsuav_dc_duplicate';
-	const ADMIN_ACTION = 'mtsuav_dc_duplicate';
+	const ROW_ACTION   = 'ocd_duplicate';
+	const BULK_ACTION  = 'ocd_duplicate';
+	const ADMIN_ACTION = 'ocd_duplicate';
 
 	/**
 	 * Wire up hooks.
@@ -41,7 +41,7 @@ class MTSUAV_DC_Duplicator {
 	 * @return bool
 	 */
 	public static function type_enabled( $post_type ) {
-		$options = mtsuav_dc_get_options();
+		$options = ocd_get_options();
 		return in_array( $post_type, $options['post_types'], true );
 	}
 
@@ -59,18 +59,18 @@ class MTSUAV_DC_Duplicator {
 		if ( ! self::type_enabled( $post->post_type ) ) {
 			return $actions;
 		}
-		if ( ! mtsuav_dc_user_can_duplicate( $post->ID ) ) {
+		if ( ! ocd_user_can_duplicate( $post->ID ) ) {
 			return $actions;
 		}
 		if ( 'trash' === $post->post_status ) {
 			return $actions;
 		}
 
-		$actions['mtsuav_dc_duplicate'] = sprintf(
+		$actions['ocd_duplicate'] = sprintf(
 			'<a href="%s" aria-label="%s">%s</a>',
-			esc_url( mtsuav_dc_duplicate_url( $post->ID ) ),
-			esc_attr( sprintf( __( 'Duplicate "%s"', 'mtsuav-duplicate-content' ), $post->post_title ) ),
-			esc_html__( 'Duplicate', 'mtsuav-duplicate-content' )
+			esc_url( ocd_duplicate_url( $post->ID ) ),
+			esc_attr( sprintf( __( 'Duplicate "%s"', 'one-click-duplicate' ), $post->post_title ) ),
+			esc_html__( 'Duplicate', 'one-click-duplicate' )
 		);
 		return $actions;
 	}
@@ -81,7 +81,7 @@ class MTSUAV_DC_Duplicator {
 	 * @return void
 	 */
 	public static function register_bulk_actions() {
-		$options = mtsuav_dc_get_options();
+		$options = ocd_get_options();
 		foreach ( $options['post_types'] as $post_type ) {
 			$type_obj = get_post_type_object( $post_type );
 			if ( ! $type_obj || ! $type_obj->show_ui ) {
@@ -99,10 +99,10 @@ class MTSUAV_DC_Duplicator {
 	 * @return array
 	 */
 	public static function bulk_action_label( $actions ) {
-		if ( ! mtsuav_dc_user_can_duplicate() ) {
+		if ( ! ocd_user_can_duplicate() ) {
 			return $actions;
 		}
-		$actions[ self::BULK_ACTION ] = __( 'Duplicate', 'mtsuav-duplicate-content' );
+		$actions[ self::BULK_ACTION ] = __( 'Duplicate', 'one-click-duplicate' );
 		return $actions;
 	}
 
@@ -118,8 +118,8 @@ class MTSUAV_DC_Duplicator {
 		if ( self::BULK_ACTION !== $doaction ) {
 			return $redirect_to;
 		}
-		if ( ! mtsuav_dc_user_can_duplicate() ) {
-			wp_die( esc_html__( 'You do not have permission to duplicate content.', 'mtsuav-duplicate-content' ) );
+		if ( ! ocd_user_can_duplicate() ) {
+			wp_die( esc_html__( 'You do not have permission to duplicate content.', 'one-click-duplicate' ) );
 		}
 
 		$count = 0;
@@ -132,7 +132,7 @@ class MTSUAV_DC_Duplicator {
 			if ( ! $post || ! self::type_enabled( $post->post_type ) ) {
 				continue;
 			}
-			if ( ! mtsuav_dc_user_can_duplicate( $post_id ) ) {
+			if ( ! ocd_user_can_duplicate( $post_id ) ) {
 				continue;
 			}
 			$new_id = self::duplicate_post( $post_id );
@@ -141,7 +141,7 @@ class MTSUAV_DC_Duplicator {
 			}
 		}
 
-		return add_query_arg( 'mtsuav_dc_duplicated', $count, $redirect_to );
+		return add_query_arg( 'ocd_duplicated', $count, $redirect_to );
 	}
 
 	/**
@@ -152,22 +152,22 @@ class MTSUAV_DC_Duplicator {
 	public static function handle_duplicate_request() {
 		$post_id = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0;
 		if ( ! $post_id ) {
-			wp_die( esc_html__( 'Missing post ID.', 'mtsuav-duplicate-content' ) );
+			wp_die( esc_html__( 'Missing post ID.', 'one-click-duplicate' ) );
 		}
 
-		check_admin_referer( 'mtsuav_dc_duplicate_' . $post_id );
+		check_admin_referer( 'ocd_duplicate_' . $post_id );
 
 		$post = get_post( $post_id );
 		if ( ! $post || ! self::type_enabled( $post->post_type ) ) {
-			wp_die( esc_html__( 'This content type cannot be duplicated.', 'mtsuav-duplicate-content' ) );
+			wp_die( esc_html__( 'This content type cannot be duplicated.', 'one-click-duplicate' ) );
 		}
-		if ( ! mtsuav_dc_user_can_duplicate( $post_id ) ) {
-			wp_die( esc_html__( 'You do not have permission to duplicate this item.', 'mtsuav-duplicate-content' ) );
+		if ( ! ocd_user_can_duplicate( $post_id ) ) {
+			wp_die( esc_html__( 'You do not have permission to duplicate this item.', 'one-click-duplicate' ) );
 		}
 
 		$new_id = self::duplicate_post( $post_id );
 		if ( is_wp_error( $new_id ) || ! $new_id ) {
-			wp_die( esc_html__( 'Duplication failed. Please try again.', 'mtsuav-duplicate-content' ) );
+			wp_die( esc_html__( 'Duplication failed. Please try again.', 'one-click-duplicate' ) );
 		}
 
 		wp_safe_redirect( self::after_duplicate_url( $new_id ) );
@@ -192,16 +192,16 @@ class MTSUAV_DC_Duplicator {
 		if ( ! $post || ! self::type_enabled( $post->post_type ) ) {
 			return;
 		}
-		if ( ! mtsuav_dc_user_can_duplicate( $post_id ) ) {
+		if ( ! ocd_user_can_duplicate( $post_id ) ) {
 			return;
 		}
 
 		$wp_admin_bar->add_node(
 			array(
-				'id'    => 'mtsuav-dc-duplicate',
-				'title' => __( 'Duplicate this', 'mtsuav-duplicate-content' ),
-				'href'  => mtsuav_dc_duplicate_url( $post_id ),
-				'meta'  => array( 'class' => 'mtsuav-dc-duplicate' ),
+				'id'    => 'ocd-duplicate',
+				'title' => __( 'Duplicate this', 'one-click-duplicate' ),
+				'href'  => ocd_duplicate_url( $post_id ),
+				'meta'  => array( 'class' => 'ocd-duplicate' ),
 			)
 		);
 	}
@@ -215,10 +215,10 @@ class MTSUAV_DC_Duplicator {
 	public static function duplicate_post( $post_id ) {
 		$post = get_post( $post_id );
 		if ( ! $post ) {
-			return new WP_Error( 'mtsuav_dc_missing', __( 'Source item not found.', 'mtsuav-duplicate-content' ) );
+			return new WP_Error( 'ocd_missing', __( 'Source item not found.', 'one-click-duplicate' ) );
 		}
 
-		$options = mtsuav_dc_get_options();
+		$options = ocd_get_options();
 
 		$status = self::resolve_status( $post, $options['status'] );
 
@@ -242,7 +242,7 @@ class MTSUAV_DC_Duplicator {
 
 		$new_id = wp_insert_post( $new_post, true );
 		if ( is_wp_error( $new_id ) || ! $new_id ) {
-			return is_wp_error( $new_id ) ? $new_id : new WP_Error( 'mtsuav_dc_insert_failed', __( 'Could not create the copy.', 'mtsuav-duplicate-content' ) );
+			return is_wp_error( $new_id ) ? $new_id : new WP_Error( 'ocd_insert_failed', __( 'Could not create the copy.', 'one-click-duplicate' ) );
 		}
 
 		if ( $options['copy_taxonomies'] ) {
@@ -275,7 +275,7 @@ class MTSUAV_DC_Duplicator {
 		 * @param int $new_id  New post ID.
 		 * @param int $post_id Source post ID.
 		 */
-		do_action( 'mtsuav_dc_after_duplicate', $new_id, $post_id );
+		do_action( 'ocd_after_duplicate', $new_id, $post_id );
 
 		return $new_id;
 	}
@@ -469,7 +469,7 @@ class MTSUAV_DC_Duplicator {
 	 * @return string
 	 */
 	protected static function after_duplicate_url( $new_id ) {
-		$options = mtsuav_dc_get_options();
+		$options = ocd_get_options();
 		$post    = get_post( $new_id );
 
 		switch ( $options['redirect'] ) {
@@ -478,12 +478,12 @@ class MTSUAV_DC_Duplicator {
 				if ( $post ) {
 					$url = add_query_arg( 'post_type', $post->post_type, $url );
 				}
-				return add_query_arg( 'mtsuav_dc_created', $new_id, $url );
+				return add_query_arg( 'ocd_created', $new_id, $url );
 
 			case 'stay':
 				$referer = wp_get_referer();
 				$base    = $referer ? $referer : admin_url( 'edit.php' );
-				return add_query_arg( 'mtsuav_dc_created', $new_id, $base );
+				return add_query_arg( 'ocd_created', $new_id, $base );
 
 			case 'edit':
 			default:
@@ -491,7 +491,7 @@ class MTSUAV_DC_Duplicator {
 				if ( ! $edit ) {
 					$edit = admin_url( 'edit.php' );
 				}
-				return add_query_arg( 'mtsuav_dc_created', $new_id, $edit );
+				return add_query_arg( 'ocd_created', $new_id, $edit );
 		}
 	}
 
@@ -501,36 +501,36 @@ class MTSUAV_DC_Duplicator {
 	 * @return void
 	 */
 	public static function admin_notices() {
-		if ( isset( $_GET['mtsuav_dc_created'] ) ) {
-			$new_id = absint( $_GET['mtsuav_dc_created'] );
+		if ( isset( $_GET['ocd_created'] ) ) {
+			$new_id = absint( $_GET['ocd_created'] );
 			$post   = $new_id ? get_post( $new_id ) : null;
 			if ( $post && current_user_can( 'edit_post', $new_id ) ) {
-				$title = $post->post_title ? $post->post_title : sprintf( __( '(no title, ID %d)', 'mtsuav-duplicate-content' ), $new_id );
+				$title = $post->post_title ? $post->post_title : sprintf( __( '(no title, ID %d)', 'one-click-duplicate' ), $new_id );
 				$view  = get_permalink( $new_id );
 				$edit  = get_edit_post_link( $new_id );
 				echo '<div class="notice notice-success is-dismissible"><p>';
 				printf(
 					/* translators: %s: duplicated item title */
-					esc_html__( 'Duplicated as "%s".', 'mtsuav-duplicate-content' ),
+					esc_html__( 'Duplicated as "%s".', 'one-click-duplicate' ),
 					esc_html( $title )
 				);
 				if ( $edit ) {
-					echo ' <a href="' . esc_url( $edit ) . '">' . esc_html__( 'Edit the copy', 'mtsuav-duplicate-content' ) . '</a>';
+					echo ' <a href="' . esc_url( $edit ) . '">' . esc_html__( 'Edit the copy', 'one-click-duplicate' ) . '</a>';
 				}
 				if ( $view ) {
-					echo ' | <a href="' . esc_url( $view ) . '">' . esc_html__( 'View the copy', 'mtsuav-duplicate-content' ) . '</a>';
+					echo ' | <a href="' . esc_url( $view ) . '">' . esc_html__( 'View the copy', 'one-click-duplicate' ) . '</a>';
 				}
 				echo '</p></div>';
 			}
 		}
 
-		if ( isset( $_GET['mtsuav_dc_duplicated'] ) ) {
-			$count = absint( $_GET['mtsuav_dc_duplicated'] );
-			if ( $count > 0 && mtsuav_dc_user_can_duplicate() ) {
+		if ( isset( $_GET['ocd_duplicated'] ) ) {
+			$count = absint( $_GET['ocd_duplicated'] );
+			if ( $count > 0 && ocd_user_can_duplicate() ) {
 				echo '<div class="notice notice-success is-dismissible"><p>';
 				printf(
 					/* translators: %d: number of duplicated items */
-					esc_html( _n( '%d item duplicated.', '%d items duplicated.', $count, 'mtsuav-duplicate-content' ) ),
+					esc_html( _n( '%d item duplicated.', '%d items duplicated.', $count, 'one-click-duplicate' ) ),
 					esc_html( number_format_i18n( $count ) )
 				);
 				echo '</p></div>';

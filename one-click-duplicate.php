@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       MTSUAV Duplicate Content
+ * Plugin Name:       One-Click Duplicate
  * Plugin URI:        https://mtsuav.com/
  * Description:       Duplicate posts, pages, products, and custom post types in one click. Row action, bulk action, and admin bar triggers with full control over status, taxonomies, meta, featured image, and comments.
  * Version:           1.0.0
@@ -10,25 +10,25 @@
  * Author URI:        https://mtsuav.com/
  * License:           GPLv2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       mtsuav-duplicate-content
- * Update URI:        https://github.com/opsecfreak/mtsuav-duplicate-content
+ * Text Domain:       one-click-duplicate
+ * Update URI:        https://github.com/opsecfreak/one-click-duplicate
  *
- * @package MTSUAV_Duplicate_Content
+ * @package OCD
  */
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'MTSUAV_DC_VERSION', '1.0.0' );
-define( 'MTSUAV_DC_SLUG', 'mtsuav-duplicate-content' );
-define( 'MTSUAV_DC_OPTION', 'mtsuav_dc_options' );
-define( 'MTSUAV_DC_BASENAME', plugin_basename( __FILE__ ) );
+define( 'OCD_VERSION', '1.0.0' );
+define( 'OCD_SLUG', 'one-click-duplicate' );
+define( 'OCD_OPTION', 'ocd_options' );
+define( 'OCD_BASENAME', plugin_basename( __FILE__ ) );
 
 require_once __DIR__ . '/includes/class-mtsuav-updater.php';
 require_once __DIR__ . '/includes/class-mtsuav-tip-box.php';
-require_once __DIR__ . '/includes/class-mtsuav-dc-settings.php';
-require_once __DIR__ . '/includes/class-mtsuav-dc-duplicator.php';
+require_once __DIR__ . '/includes/class-ocd-settings.php';
+require_once __DIR__ . '/includes/class-ocd-duplicator.php';
 
-MTSUAV_Updater::register( 'mtsuav-duplicate-content', 'opsecfreak/mtsuav-duplicate-content', MTSUAV_DC_VERSION, __FILE__ );
+MTSUAV_Updater::register( 'one-click-duplicate', 'opsecfreak/one-click-duplicate', OCD_VERSION, __FILE__ );
 mtsuav_tip_box_init();
 
 /**
@@ -36,7 +36,7 @@ mtsuav_tip_box_init();
  *
  * @return array
  */
-function mtsuav_dc_defaults() {
+function ocd_defaults() {
 	return array(
 		'post_types'      => array( 'post', 'page' ),
 		'status'          => 'draft',
@@ -57,10 +57,10 @@ function mtsuav_dc_defaults() {
  *
  * @return array
  */
-function mtsuav_dc_get_options() {
-	$saved   = get_option( MTSUAV_DC_OPTION, array() );
+function ocd_get_options() {
+	$saved   = get_option( OCD_OPTION, array() );
 	$saved   = is_array( $saved ) ? $saved : array();
-	$options = array_merge( mtsuav_dc_defaults(), $saved );
+	$options = array_merge( ocd_defaults(), $saved );
 
 	// Normalize types so callers can rely on them.
 	$options['post_types']      = array_values( array_filter( array_map( 'sanitize_key', (array) $options['post_types'] ) ) );
@@ -77,8 +77,8 @@ function mtsuav_dc_get_options() {
  *
  * @return string
  */
-function mtsuav_dc_capability() {
-	$options = mtsuav_dc_get_options();
+function ocd_capability() {
+	$options = ocd_get_options();
 	$allowed = array( 'edit_posts', 'publish_posts', 'manage_options' );
 	return in_array( $options['capability'], $allowed, true ) ? $options['capability'] : 'edit_posts';
 }
@@ -89,8 +89,8 @@ function mtsuav_dc_capability() {
  * @param int $post_id Post ID.
  * @return bool
  */
-function mtsuav_dc_user_can_duplicate( $post_id = 0 ) {
-	$cap = mtsuav_dc_capability();
+function ocd_user_can_duplicate( $post_id = 0 ) {
+	$cap = ocd_capability();
 	if ( $post_id ) {
 		return current_user_can( $cap, $post_id ) && current_user_can( 'edit_post', $post_id );
 	}
@@ -103,18 +103,18 @@ function mtsuav_dc_user_can_duplicate( $post_id = 0 ) {
  * @param int $post_id Post ID.
  * @return string
  */
-function mtsuav_dc_duplicate_url( $post_id ) {
+function ocd_duplicate_url( $post_id ) {
 	return wp_nonce_url(
 		add_query_arg(
 			array(
-				'action' => 'mtsuav_dc_duplicate',
+				'action' => 'ocd_duplicate',
 				'post'   => absint( $post_id ),
 			),
 			admin_url( 'admin-post.php' )
 		),
-		'mtsuav_dc_duplicate_' . absint( $post_id )
+		'ocd_duplicate_' . absint( $post_id )
 	);
 }
 
-MTSUAV_DC_Settings::init();
-MTSUAV_DC_Duplicator::init();
+OCD_Settings::init();
+OCD_Duplicator::init();
