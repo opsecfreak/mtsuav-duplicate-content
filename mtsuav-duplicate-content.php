@@ -23,17 +23,12 @@ define( 'MTSUAV_DC_SLUG', 'mtsuav-duplicate-content' );
 define( 'MTSUAV_DC_OPTION', 'mtsuav_dc_options' );
 define( 'MTSUAV_DC_BASENAME', plugin_basename( __FILE__ ) );
 
-define( 'MTSUAV_UPDATER_SLUG', 'mtsuav-duplicate-content' );
-define( 'MTSUAV_UPDATER_REPO', 'opsecfreak/mtsuav-duplicate-content' );
-define( 'MTSUAV_UPDATER_VERSION', '1.0.0' );
-define( 'MTSUAV_UPDATER_FILE', __FILE__ );
-
 require_once __DIR__ . '/includes/class-mtsuav-updater.php';
 require_once __DIR__ . '/includes/class-mtsuav-tip-box.php';
 require_once __DIR__ . '/includes/class-mtsuav-dc-settings.php';
 require_once __DIR__ . '/includes/class-mtsuav-dc-duplicator.php';
 
-MTSUAV_Updater::init();
+MTSUAV_Updater::register( 'mtsuav-duplicate-content', 'opsecfreak/mtsuav-duplicate-content', MTSUAV_DC_VERSION, __FILE__ );
 mtsuav_tip_box_init();
 
 /**

@@ -88,4 +88,4 @@ The plugin checks the public GitHub releases page for this project about twice a
 
 This plugin does not collect, store, or transmit any personal data.
 
-The automatic updater polls the public GitHub API (`https://api.github.com/repos/opsecfreak/mtsuav-duplicate-content/releases/latest`) about twice a day to check for new releases. The request includes your WordPress version and site URL in the User-Agent header, as GitHub requires. No other outbound requests are made.
+The automatic updater polls the public GitHub API (`https://api.github.com/repos/opsecfreak/mtsuav-duplicate-content/releases/latest`) about twice a day to check for new releases. The request carries a generic updater user-agent (MTSUAV-Updater plus your WordPress version); no site URL, license keys, emails, or other personal data are sent. No other outbound requests are made.
